@@ -58,53 +58,45 @@ class MainWindow(QMainWindow):
 
     def select_and_load_database(self):
         """Lädt eine JSON-Datenbankdatei."""
-        jason_path, _ = QFileDialog.getOpenFileName(self, "Load Database", "", "JSON Files (*.json);;All Files (*)")
-        if jason_path:
-            if jason_path.lower().endswith(".json"):
-                self.model.loadDatabase(Path(jason_path))
-                newModel.loadDatabase(jason_path)
-                self.centralWidget().update_renderer(self.model)
-                QMessageBox.information(self, "Success", f"Database loaded successfully: {jason_path}")
-            else:
-                QMessageBox.warning(self, "Failed", "Failed to load the database.")
-        else:
-                QMessageBox.critical(self, "Error", f"Error loading database:\n{str(e)}")
-
-    def select_and_import_fdd(self):
-        """Öffnet den Dateidialog und importiert die ausgewählte FDD-Datei, konvertiert sie in JSON."""
-        fddfilename, _ = QFileDialog.getOpenFileName(self, "Import Fdd File", "", "Fdd Files (*.fdd);;All Files (*)")
-
-        if fddfilename.lower().endswith(".fdd"):
+        json_path, _ = QFileDialog.getOpenFileName(self, "Load Database", "", "JSON Files (*.json);;All Files (*)")
+        if json_path:
             try:
-                # Importiere die FDD-Datei
-                self.model.importFddFile(Path(fddfilename))
+                # Datenbank ins Modell laden
+                self.model.loadDatabase(Path(json_path))
 
-                # Konvertiere die FDD-Daten in JSON-kompatibles Format (Python-Dictionary)
-                json_data = self.model.switch_to_json()
-
-                # JSON-Daten ausgeben (optional für Debugging)
-                print(json.dumps(json_data, indent=4))  # Dies zeigt die JSON-Daten im Terminal an
-
-                # Renderer aktualisieren
+                # Renderer und Baum im Widget aktualisieren
                 self.centralWidget().update_renderer(self.model)
 
                 # Erfolgsmeldung
-                QMessageBox.information(self, "Success", f"Fdd file imported and converted to JSON successfully: {fddfilename}")
+                QMessageBox.information(self, "Success", f"Database loaded successfully: {json_path}")
             except Exception as e:
-                # Fehlerbehandlung, wenn etwas schiefgeht
-                QMessageBox.critical(self, "Error", f"An error occurred while importing and converting the Fdd file:\n{str(e)}")
-        else:
-            # Fehler, wenn die Datei keine FDD-Datei ist
-            QMessageBox.warning(self, "Failed", "Failed to import the Fdd file.")
+                QMessageBox.critical(self, "Error", f"Error loading database:\n{str(e)}")
 
+    def select_and_import_fdd(self):
+        """Importiert eine FDD-Datei und konvertiert sie in JSON."""
+        fdd_path, _ = QFileDialog.getOpenFileName(self, "Import Fdd File", "", "Fdd Files (*.fdd);;All Files (*)")
+        if fdd_path:
+            try:
+                # Importiere die FDD-Datei
+                self.model.importFddFile(Path(fdd_path))
+
+                # Renderer und Baum im Widget aktualisieren
+                self.centralWidget().update_renderer(self.model)
+
+                # Erfolgsmeldung
+                QMessageBox.information(self, "Success", f"Fdd file imported successfully: {fdd_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Error importing Fdd file:\n{str(e)}")
 
     def save_to_file(self):
         """Speichert die Datenbank als JSON-Datei."""
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Database", "", "JSON Files (*.json);;All Files (*)")
         if file_path:
+            try:
                 self.model.saveDatabase(Path(file_path))
                 QMessageBox.information(self, "Success", f"Database saved successfully: {file_path}")
-
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Error saving database:\n{str(e)}")
 
     def export_fds_file(self):
         """Exportiert das Modell als FDS-Datei."""

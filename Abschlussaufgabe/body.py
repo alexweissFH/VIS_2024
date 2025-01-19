@@ -16,6 +16,7 @@ class rigidBody(body):
     def __init__(self,**kwargs):##kwargs kommt aus 
         if "text" in kwargs:
             parameter = {
+                "name": {"type": "string", "value": "no"},
                 "mass": {"type": "float", "value": 1.},
                 "COG": {"type": "vector", "value": [0.,0.,0.]},
                 "geometry": {"type": "filepath", "value": ""},
@@ -31,7 +32,9 @@ class rigidBody(body):
             self.parameter["color"]["value"] = [rgb/255 for rgb in self.parameter["color"]["value"]]
 
         else:
-            body.__init__(self,"Rigid_EulerParameter_PAI",**kwargs)
+            body.__init__(self, "Rigid_EulerParameter_PAI", **kwargs)
+            # Füge auch hier das name-Attribut hinzu, falls es nicht über kwargs gekommen ist
+            self.parameter["name"] = {"type": "string", "value": kwargs.get("name", "DefaultName")}
 
         # read OBJ file (CAD graphics)
         reader = vtkOBJReader()

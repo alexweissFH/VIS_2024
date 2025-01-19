@@ -28,6 +28,15 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": ["Aufgabe_3/test.fdd"]
+        },
+
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["Abschlussaufgabe/test.fdd"]
         }
     ]
 }

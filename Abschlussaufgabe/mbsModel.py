@@ -88,3 +88,7 @@ class mbsModel:
     def showModel(self, renderer):
         for object in self.__mbsObjectList:
             object.show(renderer)
+
+    def getObjects(self):
+        """Gibt die Liste der mbsObject-Instanzen zurück."""
+        return self.__mbsObjectList
