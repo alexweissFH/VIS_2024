@@ -34,7 +34,6 @@ class rigidBody(body):
         else:
             body.__init__(self, "Rigid_EulerParameter_PAI", **kwargs)
             # Füge auch hier das name-Attribut hinzu, falls es nicht über kwargs gekommen ist
-            self.parameter["name"] = {"type": "string", "value": kwargs.get("name", "DefaultName")}
 
         # read OBJ file (CAD graphics)
         reader = vtkOBJReader()
