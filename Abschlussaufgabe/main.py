@@ -2,22 +2,12 @@
 from __future__ import annotations
 
 import sys
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QTextEdit, QVBoxLayout, QLineEdit
-from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
 from main_window import MainWindow
 from main_widget import Widget
 
 import mbsModel
 import sys
-from pathlib import Path
-
-from vtkmodules.vtkRenderingCore import (
-    vtkRenderWindow,
-    vtkRenderWindowInteractor,
-    vtkRenderer
-)
-from vtkmodules.all import vtkInteractorStyleTrackballCamera
-
 
 # Qt Application
 app = QApplication(sys.argv)

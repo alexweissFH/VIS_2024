@@ -1,7 +1,8 @@
 Body Rigid_EulerParameter_PAI
+	name = new_body_0
 	mass = 0.001
 	COG = 0.0,0.0,0.0
-	geometry = C:\vis2024\VIS_2024\Aufgabe_3\quader.obj
+	geometry = C:\vis2024\VIS_2024\Abschlussaufgabe\quader.obj
 	position = 0.0,0.0,0.0
 	x_axis = 1.0,0.0,0.0
 	y_axis = 0.0,1.0,0.0
@@ -9,9 +10,10 @@ Body Rigid_EulerParameter_PAI
 EndBody
 %
 Body Rigid_EulerParameter_PAI
+	name = new_body_1
 	mass = 0.001
 	COG = 0.0,0.0,0.0
-	geometry = C:\vis2024\VIS_2024\Aufgabe_3\quader.obj
+	geometry = C:\vis2024\VIS_2024\Abschlussaufgabe\quader.obj
 	position = 25.0,0.0,10.0
 	x_axis = 1.0,0.0,0.0
 	y_axis = 0.0,1.0,0.0
@@ -19,6 +21,7 @@ Body Rigid_EulerParameter_PAI
 EndBody
 %
 Constraint Generic
+	name = new_constraint_0
 	body1 = new_body_0
 	body2 = GROUND
 	position = 0.0,5.0,-20.0
@@ -34,6 +37,7 @@ Constraint Generic
 EndConstraint
 %
 Constraint Generic
+	name = new_constraint_1
 	body1 = new_body_0
 	body2 = new_body_1
 	position = 25.0,0.0,0.0
@@ -49,6 +53,7 @@ Constraint Generic
 EndConstraint
 %
 Force GenericForce
+	name = new_force_0
 	body1 = new_body_0
 	body2 = new_body_1
 	PointOfApplication_Body1 = -4.0,5.0,-44.0
@@ -59,6 +64,7 @@ Force GenericForce
 EndForce
 %
 Force GenericTorque
+	name = new_torque_1
 	body1 = new_body_1
 	body2 = new_body_0
 	mode = Body fixed
@@ -72,6 +78,7 @@ DataObject Parameter
 EndDataObject
 %
 Measure Translational
+	name = new_measure_0
 	body1 = new_body_0
 	body2 = GROUND
 	type = displacement
@@ -84,6 +91,7 @@ Measure Translational
 EndMeasure
 %
 Measure Rotational
+	name = new_measure_1
 	body1 = new_body_1
 	body2 = new_body_0
 	type = angle

@@ -1,12 +1,14 @@
 
 import inputfilereader
 import body
+from body import rigidBody
 import constraint
 import force
 import measure
 import dataobject
 import json
 import os
+import mbsObject
 
 class mbsModel:
     def __init__(self):
@@ -89,6 +91,15 @@ class mbsModel:
         for object in self.__mbsObjectList:
             object.show(renderer)
 
-    def getObjects(self):
-        """Gibt die Liste der mbsObject-Instanzen zurück."""
+
+    def get_mbsObjectList(self):
         return self.__mbsObjectList
+
+    def get_object_type_and_name(self, obj):
+        """Gibt den Typ und den Namen des Objekts zurück."""
+        if obj in self.__mbsObjectList:
+            name = obj.parameter["name"]["value"] if "name" in obj.parameter else "Unbekannter Name"
+            obj_type = obj.getType() 
+            return obj_type, name
+        else:
+            raise ValueError("Das Objekt befindet sich nicht in der mbsObjectList")

@@ -65,6 +65,7 @@ class mbsObject:
     @staticmethod
     def str2float(inString):
         return float(inString)
+    
     @staticmethod
     def float2str(inFloat):
         return str(inFloat)

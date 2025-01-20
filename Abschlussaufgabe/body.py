@@ -15,8 +15,9 @@ class body(mbsObject):
 class rigidBody(body):
     def __init__(self,**kwargs):##kwargs kommt aus 
         if "text" in kwargs:
+            
             parameter = {
-                "name": {"type": "string", "value": "no"},
+                "name": {"type": "string", "value":""},
                 "mass": {"type": "float", "value": 1.},
                 "COG": {"type": "vector", "value": [0.,0.,0.]},
                 "geometry": {"type": "filepath", "value": ""},
@@ -24,12 +25,12 @@ class rigidBody(body):
                 "x_axis": {"type": "vector", "value": [1.,0.,0.]},
                 "y_axis": {"type": "vector", "value": [0.,1.,0.]},
                 "z_axis": {"type": "vector", "value": [0.,0.,1.]},
-                "color": {"type": "colorvector", "value": [0,0,0,0]}
+                "color": {"type": "colorvector", "value": [0,0,0,0]},
             }
 
             body.__init__(self,"Rigid_EulerParameter_PAI",text=kwargs["text"],parameter=parameter)
             #compute rgb values in [0,1] as vtk uses rgb in this range and fdd uses [0,255]
-            self.parameter["color"]["value"] = [rgb/255 for rgb in self.parameter["color"]["value"]]
+            self.parameter["color"]["value"] = [rgb/255 for rgb in self.parameter["color"]["value"]]    
 
         else:
             body.__init__(self, "Rigid_EulerParameter_PAI", **kwargs)
