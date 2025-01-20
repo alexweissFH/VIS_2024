@@ -6,6 +6,7 @@ import constraint
 import force
 import measure
 import dataobject
+from parameter_config import wanted_parameters
 import json
 import os
 import mbsObject
@@ -103,3 +104,13 @@ class mbsModel:
             return obj_type, name
         else:
             raise ValueError("Das Objekt befindet sich nicht in der mbsObjectList")
+    
+    def get_object_parameters(self, obj_name, obj_type):
+        """Gibt nur die gewünschten Parameter für ein bestimmtes Objekt zurück, basierend auf dem Typ."""
+        for obj in self.__mbsObjectList:
+            if obj.parameter["name"]["value"] == obj_name:
+                parameters = obj["parameter"]
+                # Filtern der Parameter basierend auf dem Typ des Objekts
+                filtered_params = {key: value["value"] for key, value in parameters.items() if key in wanted_parameters.get(obj_type, [])}
+                return filtered_params
+        return {}

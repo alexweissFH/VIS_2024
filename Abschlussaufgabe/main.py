@@ -9,6 +9,7 @@ from main_widget import Widget
 import mbsModel
 import sys
 
+
 # Qt Application
 app = QApplication(sys.argv)
 

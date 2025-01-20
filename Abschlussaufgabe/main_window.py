@@ -142,10 +142,10 @@ class MainWindow(QMainWindow):
 
         return Qdock_widget
 
-    def update_tree_view(self, file_name="Fdd-File-Bezeichnung"):
-        """Aktualisiert den Strukturbaum basierend auf dem Modell."""
+    def update_tree_view(self, file_name="Kategorie"):
+        """Aktualisiert den Strukturbaum basierend auf dem geladenen Modell."""
         self.tree_model.clear()  # Entferne vorherige Daten
-        self.tree_model.setVerticalHeaderLabels(["dkjfkj"])
+        self.tree_model.setVerticalHeaderLabels(["Objekte"])
 
         # Root-Element für die Kategorien
         menu_category = QStandardItem(file_name)
@@ -167,10 +167,26 @@ class MainWindow(QMainWindow):
 
         # Schleife über alle Objekte im Modell
         for obj in self.model.get_mbsObjectList():
-            obj_type, name = self.model.get_object_type_and_name(obj)
-            item = QStandardItem(name)
+            obj_type, sub_type = self.model.get_object_type_and_name(obj)
+            
+            # Um sicherzustellen, dass wir nur den Namen und Typ anzeigen
+            item_name = obj.parameter.get("name", {}).get("value", "Unbekannter Name")
+            item_type = obj_type
 
-            # Wenn der Typ des Objekts "Body" ist, dann wird es als Rigid Body hinzugefügt
+            # Hier holen wir den Typ des Objekts und den Namen als String, NICHT die Instanz selbst
+            item = QStandardItem(f"{item_name} ({item_type})")  # Anzeige von Name und Typ
+            item.setEditable(False)  # Verhindert Bearbeitung von Objektnamen
+
+            # Füge die gefilterten Parameter des Objekts hinzu
+            parameters = self.model.get_object_parameters(obj, obj_type)
+            for param_name, param_value in parameters.items():
+                param_name_str = str(param_name)  
+                param_value_str = str(param_value) 
+                param_item = QStandardItem(f"{param_name_str}: {param_value_str}")
+                param_item.setEditable(False)  # Verhindert Bearbeitung der Parameter
+                item.appendRow(param_item)
+
+            # Die Objekte nach Typ sortieren
             if obj_type == "Body":
                 menu_rigid_bodies.appendRow(item)
             elif obj_type == "Constraint":
@@ -186,5 +202,5 @@ class MainWindow(QMainWindow):
         menu_category.appendRow(menu_forces)
         menu_category.appendRow(menu_measures)
 
-        # Alle Kategorien erweitern, sodass sie aufklappbar sind
+        # Alle Kategorien werden erweiterbar gemacht
         self.tree_view.expandAll()
