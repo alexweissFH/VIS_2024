@@ -32,6 +32,19 @@ class MainWindow(QMainWindow):
         self.model_tree = self._create_model_tree()
         self.addDockWidget(Qt.LeftDockWidgetArea, self.model_tree)
 
+        # Neues Menü für Tools erstellen
+        self.tools_menu = self.menu.addMenu("Tools")
+
+        # Regenerieren-Aktion definieren
+        regenerate_action = QAction("Regenerieren", self)
+        regenerate_action.triggered.connect(self.regenerate_model)
+
+        # Aktion zum Tools-Menü hinzufügen
+        self.tools_menu.addAction(regenerate_action)
+
+         # Registeriere die Änderungserkennung für den Baum
+        self.tree_model.dataChanged.connect(self.on_tree_data_changed)
+
 
         # Menüaktionen definieren
         load_action = QAction("Load Database", self)
@@ -63,7 +76,7 @@ class MainWindow(QMainWindow):
 
         # Fenstergröße festlegen
         geometry = self.screen().availableGeometry()
-        self.setFixedSize(geometry.width() * 0.8, geometry.height() * 0.7)
+        self.setFixedSize(geometry.width() * 0.7, geometry.height() * 0.7)
 
     def select_and_load_database(self):
         """Lädt eine JSON-Datenbankdatei."""
@@ -133,15 +146,14 @@ class MainWindow(QMainWindow):
         self.tree_model = QStandardItemModel(self)
         self.tree_view.setModel(self.tree_model)
         layout.addWidget(self.tree_view)
-        
-        #Daten holen zum einlesen des Baumes
+
+        # Daten holen zum einlesen des Baumes
         self.update_tree_view()  # Aufruf der Methode update_tree_view()
 
         #Setze das Dock im Tree
         Qdock_widget.setWidget(tree_widget)
 
         return Qdock_widget
-
     def update_tree_view(self, file_name="Kategorie"):
         """Aktualisiert den Strukturbaum basierend auf dem geladenen Modell."""
         self.tree_model.clear()
@@ -165,14 +177,14 @@ class MainWindow(QMainWindow):
 
         for obj in self.model.get_mbsObjectList():
             obj_type, sub_type = self.model.get_object_type_and_name(obj)
-            
+
             item_name = obj.parameter.get("name", {}).get("value", "Unbekannter Name")
             item_type = obj_type
 
             if isinstance(obj, object):
                 item_name = str(item_name)
 
-            item = QStandardItem(f"{item_name} ({item_type})")
+            item = QStandardItem(f"{item_name}")
             item.setEditable(True)
 
             # Holen der Parameter mit der neuen Methode
@@ -207,3 +219,120 @@ class MainWindow(QMainWindow):
 
         # Baum erweitern
         self.tree_view.expandAll()
+
+
+    def on_tree_data_changed(self, top_left, bottom_right):
+        """Verarbeitet Änderungen in den Baumparametern und aktualisiert das Modell."""
+        if top_left.row() == bottom_right.row() and top_left.column() == bottom_right.column():
+            try:
+                # Geänderten Wert abrufen
+                item = self.tree_model.itemFromIndex(top_left)
+                new_value = item.text()
+                print(f"Geändertes Feld: Zeile={top_left.row()}, Spalte={top_left.column()}, Neuer Wert={new_value}")
+
+                # Objektname (z. B. new_body_0) finden
+                object_item = item
+                while object_item.parent() and object_item.parent().text().strip().lower() != "rigid bodies":
+                    object_item = object_item.parent()
+
+                if not object_item.parent() or object_item.parent().text().strip().lower() != "rigid bodies":
+                    print("Fehler: Das Objekt gehört nicht zu 'Rigid Bodies'.")
+                    return
+
+                object_name = object_item.text().strip()
+                print(f"Erkanntes Objekt: {object_name}")
+
+                # Zeilen (Parameter) basierend auf der Reihenfolge zuordnen
+                row_to_param = {
+                    2: "position",  # Zeile 2 für Position
+                    3: "x_axis",    # Zeile 3 für X-Achse
+                    4: "y_axis",    # Zeile 4 für Y-Achse
+                    5: "z_axis"     # Zeile 5 für Z-Achse
+                }
+
+                # Den Parameter bestimmen
+                param_name = row_to_param.get(top_left.row(), None)
+                if not param_name:
+                    print(f"Zeile {top_left.row()} hat keinen zugeordneten Parameter. Änderung wird ignoriert.")
+                    return
+
+                print(f"Erkannter Parameter: {param_name}")
+
+                # Suche das entsprechende Objekt im Modell
+                object_found = False
+                for obj in self.model.get_mbsObjectList():
+                    model_object_name = obj.parameter.get("name", {}).get("value", "").strip()
+                    print(f"Vergleiche Baum-Objekt '{object_name}' mit Modell-Objekt '{model_object_name}'")
+
+                    if model_object_name.lower() == object_name.lower():
+                        print(f"Objekt {object_name} im Modell gefunden. Aktualisiere Parameter {param_name}...")
+
+                        # Aktualisiere den Parameter
+                        try:
+                            if param_name == "position":
+                                # Für 'position' wird der Wert als Liste gespeichert
+                                vectorText = new_value.strip("[]")  # Entfernt die eckigen Klammern
+                                obj.parameter[param_name]["value"] = list(map(float, vectorText.split(',')))  # Wandelt den String in eine Liste von Fließkommazahlen um
+                            else:
+                                # Für andere Parameter wird der Wert als float gesetzt
+                                obj.parameter[param_name]["value"] = float(new_value)
+
+                            print(f"Parameter {param_name} erfolgreich auf {new_value} gesetzt.")
+                        except Exception as e:
+                            print(f"Fehler beim Setzen von {param_name}: {str(e)}")
+                        object_found = True
+                        break
+
+                if not object_found:
+                    print(f"Fehler: Objekt {object_name} nicht im Modell gefunden!")
+
+            except Exception as e:
+                print(f"Fehler beim Verarbeiten der Änderung: {str(e)}")
+
+
+    def regenerate_model(self):
+        """Regeneriert das Modell und aktualisiert nur die Parameter 'position', 'x_axis', 'y_axis', 'z_axis'."""
+        try:
+            print("Start der Regenerierung des Modells...")
+            
+            # Durch alle Objekte im Modell iterieren
+            for obj in self.model.get_mbsObjectList():
+                obj_name = obj.parameter.get("name", {}).get("value", "").strip()
+                print(f"Überprüfe Objekt: {obj_name}")
+
+                # Durch die Baumstruktur iterieren
+                for row in range(self.tree_model.rowCount()):
+                    tree_item = self.tree_model.item(row, 0)
+                    tree_name = tree_item.text().strip()
+
+                    print(f"Vergleiche Baumobjekt '{tree_name}' mit Modellobjekt '{obj_name}'")
+
+                    if tree_name.lower() == obj_name.lower():
+                        print(f"Objekt '{obj_name}' gefunden. Aktualisiere Parameter...")
+
+                        # Aktualisiere 'position'
+                        position_item = tree_item.child(1, 1)
+                        if position_item:
+                            position_value = position_item.text()
+                            try:
+                                obj.parameter["position"]["value"] = [float(x) for x in position_value.split(",")]
+                                print(f"Position für '{obj_name}' aktualisiert auf {position_value}")
+                            except ValueError:
+                                print(f"Fehler bei der Konvertierung von 'position': {position_value}")
+
+                        # Aktualisiere 'x_axis', 'y_axis', 'z_axis'
+                        for axis in ['x_axis', 'y_axis', 'z_axis']:
+                            axis_item = tree_item.child(axis, 1)  # Nimm die entsprechende Spalte für Achsenwerte
+                            if axis_item:
+                                axis_value = axis_item.text()
+                                try:
+                                    obj.parameter[axis]["value"] = float(axis_value)
+                                    print(f"{axis} für '{obj_name}' aktualisiert auf {axis_value}")
+                                except ValueError:
+                                    print(f"Fehler bei der Konvertierung von {axis}: {axis_value}")
+            
+            print("Aktualisiere den Renderer...")
+            self.centralWidget().update_renderer(self.model)
+            print("Modell erfolgreich regeneriert!")
+        except Exception as e:
+            print(f"Fehler beim Regenerieren des Modells: {str(e)}")

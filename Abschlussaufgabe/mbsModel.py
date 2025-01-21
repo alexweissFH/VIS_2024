@@ -117,13 +117,16 @@ class mbsModel:
         # Filterung der Parameter je nach Typ
         if obj_type == "Body":
             # Beispiel für spezielle Parameter für Body-Objekte
-            return {key: value["value"] for key, value in parameters.items() if key in ["mass", "COG", "geometry", "position"]}
+            return {key: value["value"] for key, value in parameters.items() if key in ["mass", "COG", "position", "x_axis", "y_axis", "z_axis"]}
         elif obj_type == "Constraint":
-            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "position", "dx", "dy", "dz"]}
+            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "position", "dx", "dy", "dz","ax", "ay", "az"]}
         elif obj_type == "Force":
-            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "PointOfApplication_Body1", "direction"]}
+            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "PointOfApplication_Body1","PointOfApplication_Body2","mode","direction","ForceExpression"]}
         elif obj_type == "Measure":
-            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "location_body1", "type"]}
+            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "type","component","location_body1","location_body2", "type","use_initial_value"]}
         
         # Fallback: Gebe alle Parameter zurück, wenn kein spezifischer Typ gefunden wurde
         return {key: value["value"] for key, value in parameters.items()}
+    
+    
+    

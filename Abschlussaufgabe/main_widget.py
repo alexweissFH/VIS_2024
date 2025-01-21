@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkRenderingCore import vtkRenderer
-import mbsModel
+from mbsModel import mbsModel
 from vtkmodules.all import vtkRenderer, vtkInteractorStyleTrackballCamera
 
 
@@ -26,10 +26,9 @@ class Widget(QWidget):
 
     def update_renderer(self, model):
         """Aktualisiert den Renderer und die Baumstruktur."""
-        # Aktualisiere den VTK-Renderer
+        #Aktualisiere den VTK-Renderer
         model.showModel(self.renderer)
         self.renderer.ResetCamera()
         self.vtk_widget.GetRenderWindow().Render()
 
-
-
+ 
