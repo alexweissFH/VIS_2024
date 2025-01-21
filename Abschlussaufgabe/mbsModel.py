@@ -6,10 +6,10 @@ import constraint
 import force
 import measure
 import dataobject
-from parameter_config import wanted_parameters
 import json
 import os
 import mbsObject
+
 
 class mbsModel:
     def __init__(self):
@@ -92,9 +92,24 @@ class mbsModel:
         for object in self.__mbsObjectList:
             object.show(renderer)
 
+    def hideModel(self, renderer):
+        for object in self.__mbsObjectList:
+            object.hide(renderer)
+
 
     def get_mbsObjectList(self):
         return self.__mbsObjectList
+    
+    def clear(self):
+        """Löscht alle Daten im Modell und setzt es auf den ursprünglichen Zustand zurück."""
+        self.__mbsObjectList.clear()  # Lösche die Modellobjekte
+        print("Modellobjekte gelöscht.")
+
+        # Weitere Aufräumarbeiten oder Initialisierungen, die für dein Modell notwendig sind
+        # Zum Beispiel: Alle Renderer zurücksetzen oder Status-Variablen zurücksetzen
+        # Hier könnte auch der Renderer gelöscht oder zurückgesetzt werden, falls notwendig
+        self.__mbsObjectList = []  # Zurücksetzen der Liste der Modellobjekte
+        print("Modell zurückgesetzt.")
 
     def get_object_type_and_name(self, obj):
         """Gibt den Typ und den Namen des Objekts zurück."""

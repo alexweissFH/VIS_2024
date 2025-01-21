@@ -6,14 +6,17 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QDockWidget
 from PySide6.QtCore import Qt
 import mbsModel
 import os
-import main_widget
-
+from main_widget import Widget
+from body import rigidBody
+import tempfile
 
 newModel = mbsModel.mbsModel()
 
 class MainWindow(QMainWindow):
     def __init__(self, widget):
         super().__init__()
+
+        self.widget = widget  # Speichere das übergebene Widget als Attribut
         self.setWindowTitle("Darstellung eines 3D-Modells mit VTK")
         self.setCentralWidget(widget)
         self.setGeometry(100, 100, 1200, 900)
@@ -25,10 +28,10 @@ class MainWindow(QMainWindow):
         self.menu = self.menuBar()
         self.file_menu = self.menu.addMenu("File")
 
-        # Statusleiste wird initsialisiert
+        # Statusleiste wird initialisiert
         self.statusBar().showMessage("Wählen Sie ein JSON oder FDD File aus, um es zu laden und anzuzeigen")
 
-        #Modell-Tree erstellen
+        # Modell-Tree erstellen
         self.model_tree = self._create_model_tree()
         self.addDockWidget(Qt.LeftDockWidgetArea, self.model_tree)
 
@@ -42,9 +45,8 @@ class MainWindow(QMainWindow):
         # Aktion zum Tools-Menü hinzufügen
         self.tools_menu.addAction(regenerate_action)
 
-         # Registeriere die Änderungserkennung für den Baum
+        # Registeriere die Änderungserkennung für den Baum
         self.tree_model.dataChanged.connect(self.on_tree_data_changed)
-
 
         # Menüaktionen definieren
         load_action = QAction("Load Database", self)
@@ -291,48 +293,47 @@ class MainWindow(QMainWindow):
 
 
     def regenerate_model(self):
-        """Regeneriert das Modell und aktualisiert nur die Parameter 'position', 'x_axis', 'y_axis', 'z_axis'."""
+        """Regeneriert das Modell, indem die Datenbank vorübergehend gespeichert und neu geladen wird."""
         try:
+            self.centralWidget().clear_renderer()  # Vorher das Modell verstecken
+            print("Renderer erfolgreich geleert.")
+            
             print("Start der Regenerierung des Modells...")
-            
-            # Durch alle Objekte im Modell iterieren
-            for obj in self.model.get_mbsObjectList():
-                obj_name = obj.parameter.get("name", {}).get("value", "").strip()
-                print(f"Überprüfe Objekt: {obj_name}")
 
-                # Durch die Baumstruktur iterieren
-                for row in range(self.tree_model.rowCount()):
-                    tree_item = self.tree_model.item(row, 0)
-                    tree_name = tree_item.text().strip()
+            # Temporären Speicherpfad erstellen
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_file:
+                temp_path = temp_file.name
 
-                    print(f"Vergleiche Baumobjekt '{tree_name}' mit Modellobjekt '{obj_name}'")
+            print(f"Temporärer Speicherpfad: {temp_path}")
 
-                    if tree_name.lower() == obj_name.lower():
-                        print(f"Objekt '{obj_name}' gefunden. Aktualisiere Parameter...")
+            # Modell speichern
+            self.model.saveDatabase(temp_path)
+            print("Modell erfolgreich gespeichert.")
 
-                        # Aktualisiere 'position'
-                        position_item = tree_item.child(1, 1)
-                        if position_item:
-                            position_value = position_item.text()
-                            try:
-                                obj.parameter["position"]["value"] = [float(x) for x in position_value.split(",")]
-                                print(f"Position für '{obj_name}' aktualisiert auf {position_value}")
-                            except ValueError:
-                                print(f"Fehler bei der Konvertierung von 'position': {position_value}")
+            # Renderer leeren
+            #self.clear_renderer()
 
-                        # Aktualisiere 'x_axis', 'y_axis', 'z_axis'
-                        for axis in ['x_axis', 'y_axis', 'z_axis']:
-                            axis_item = tree_item.child(axis, 1)  # Nimm die entsprechende Spalte für Achsenwerte
-                            if axis_item:
-                                axis_value = axis_item.text()
-                                try:
-                                    obj.parameter[axis]["value"] = float(axis_value)
-                                    print(f"{axis} für '{obj_name}' aktualisiert auf {axis_value}")
-                                except ValueError:
-                                    print(f"Fehler bei der Konvertierung von {axis}: {axis_value}")
-            
-            print("Aktualisiere den Renderer...")
-            self.centralWidget().update_renderer(self.model)
+            # Modell neu laden
+            self.model.clear()
+            self.centralWidget().clear_renderer()
+            self.model = mbsModel.mbsModel()
+            self.model.loadDatabase(temp_path)
+            print("Modell erfolgreich neu geladen.")
+
+            # Temporäre Datei löschen
+            os.remove(temp_path)
+            print("Temporäre Datei gelöscht.")
+
+            # Neu rendern
+            widget = self.centralWidget()
+            if widget is not None:
+                widget.update_renderer(self.model)
+                print("Renderer erfolgreich aktualisiert.")
+            else:
+                print("Fehler: Kein zentrales Widget gefunden!")
+
             print("Modell erfolgreich regeneriert!")
+
         except Exception as e:
             print(f"Fehler beim Regenerieren des Modells: {str(e)}")
+
