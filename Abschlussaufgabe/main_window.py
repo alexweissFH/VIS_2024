@@ -144,15 +144,13 @@ class MainWindow(QMainWindow):
 
     def update_tree_view(self, file_name="Kategorie"):
         """Aktualisiert den Strukturbaum basierend auf dem geladenen Modell."""
-        self.tree_model.clear()  # Entferne vorherige Daten
-        self.tree_model.setVerticalHeaderLabels(["Objekte"])
+        self.tree_model.clear()
+        self.tree_model.setHorizontalHeaderLabels(["Parameter", "Wert"])  # Korrekt setzen!
 
-        # Root-Element für die Kategorien
         menu_category = QStandardItem(file_name)
-        menu_category.setEditable(False)  # Verhindert Bearbeitung des Root-Elements
+        menu_category.setEditable(False)
         self.tree_model.appendRow(menu_category)
 
-        # Unterkategorien hinzufügen
         menu_rigid_bodies = QStandardItem("Rigid Bodies")
         menu_rigid_bodies.setEditable(False)
 
@@ -165,28 +163,34 @@ class MainWindow(QMainWindow):
         menu_measures = QStandardItem("Measures")
         menu_measures.setEditable(False)
 
-        # Schleife über alle Objekte im Modell
         for obj in self.model.get_mbsObjectList():
             obj_type, sub_type = self.model.get_object_type_and_name(obj)
             
-            # Um sicherzustellen, dass wir nur den Namen und Typ anzeigen
             item_name = obj.parameter.get("name", {}).get("value", "Unbekannter Name")
             item_type = obj_type
 
-            # Hier holen wir den Typ des Objekts und den Namen als String, NICHT die Instanz selbst
-            item = QStandardItem(f"{item_name} ({item_type})")  # Anzeige von Name und Typ
-            item.setEditable(False)  # Verhindert Bearbeitung von Objektnamen
+            if isinstance(obj, object):
+                item_name = str(item_name)
 
-            # Füge die gefilterten Parameter des Objekts hinzu
+            item = QStandardItem(f"{item_name} ({item_type})")
+            item.setEditable(True)
+
+            # Holen der Parameter mit der neuen Methode
             parameters = self.model.get_object_parameters(obj, obj_type)
-            for param_name, param_value in parameters.items():
-                param_name_str = str(param_name)  
-                param_value_str = str(param_value) 
-                param_item = QStandardItem(f"{param_name_str}: {param_value_str}")
-                param_item.setEditable(False)  # Verhindert Bearbeitung der Parameter
-                item.appendRow(param_item)
 
-            # Die Objekte nach Typ sortieren
+            if not parameters:
+                parameters = {"Standard-Parameter": "Kein Wert"}
+
+            for param_name, param_value in parameters.items():
+                param_name_item = QStandardItem(param_name)
+                param_name_item.setEditable(False)
+
+                param_value_item = QStandardItem(str(param_value))
+                param_value_item.setEditable(True)
+
+                item.appendRow([param_name_item, param_value_item])
+
+            # Objekte nach Typ sortieren
             if obj_type == "Body":
                 menu_rigid_bodies.appendRow(item)
             elif obj_type == "Constraint":
@@ -196,11 +200,10 @@ class MainWindow(QMainWindow):
             elif obj_type == "Measure":
                 menu_measures.appendRow(item)
 
-        # Die Kategorien werden zum Root-Element hinzugefügt
         menu_category.appendRow(menu_rigid_bodies)
         menu_category.appendRow(menu_constraints)
         menu_category.appendRow(menu_forces)
         menu_category.appendRow(menu_measures)
 
-        # Alle Kategorien werden erweiterbar gemacht
+        # Baum erweitern
         self.tree_view.expandAll()

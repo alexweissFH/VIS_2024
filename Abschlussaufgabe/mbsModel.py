@@ -105,12 +105,25 @@ class mbsModel:
         else:
             raise ValueError("Das Objekt befindet sich nicht in der mbsObjectList")
     
-    def get_object_parameters(self, obj_name, obj_type):
-        """Gibt nur die gewünschten Parameter für ein bestimmtes Objekt zurück, basierend auf dem Typ."""
-        for obj in self.__mbsObjectList:
-            if obj.parameter["name"]["value"] == obj_name:
-                parameters = obj["parameter"]
-                # Filtern der Parameter basierend auf dem Typ des Objekts
-                filtered_params = {key: value["value"] for key, value in parameters.items() if key in wanted_parameters.get(obj_type, [])}
-                return filtered_params
-        return {}
+    def get_object_parameters(self, obj, obj_type):
+        """Gibt alle Parameter für ein bestimmtes Objekt zurück, basierend auf dem Typ."""
+        # Direkt auf 'parameter' zugreifen, da es bereits ein Dictionary ist
+        parameters = obj.parameter  # Kein .get() hier notwendig
+        
+        # Wenn keine Parameter gefunden werden, gib ein leeres Dictionary zurück
+        if not parameters:
+            return {}
+        
+        # Filterung der Parameter je nach Typ
+        if obj_type == "Body":
+            # Beispiel für spezielle Parameter für Body-Objekte
+            return {key: value["value"] for key, value in parameters.items() if key in ["mass", "COG", "geometry", "position"]}
+        elif obj_type == "Constraint":
+            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "position", "dx", "dy", "dz"]}
+        elif obj_type == "Force":
+            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "PointOfApplication_Body1", "direction"]}
+        elif obj_type == "Measure":
+            return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "location_body1", "type"]}
+        
+        # Fallback: Gebe alle Parameter zurück, wenn kein spezifischer Typ gefunden wurde
+        return {key: value["value"] for key, value in parameters.items()}
