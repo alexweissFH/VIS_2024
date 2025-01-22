@@ -16,7 +16,7 @@ class Widget(QWidget):
         # VTK Renderer Setup
         self.vtk_widget = QVTKRenderWindowInteractor(self)
         self.renderer = vtkRenderer()
-        self.renderer.SetBackground(1.0, 1.0, 1.0)
+        #self.renderer.SetBackground(1.0, 1.0, 1.0)
         render_window = self.vtk_widget.GetRenderWindow()
         render_window.AddRenderer(self.renderer)
 
@@ -25,6 +25,11 @@ class Widget(QWidget):
         layout.addWidget(self.vtk_widget)
         self.setLayout(layout)
 
+    def GetRenderer(self):
+        """Gibt den Renderer zurück."""
+        return self.renderer
+
+    
     def update_renderer(self, model):
         """Aktualisiert den Renderer mit dem Modell."""
         try:
