@@ -69,25 +69,7 @@ class mbsModel:
 
         with open(dataBasePath, "w") as outfile:
             outfile.write(jDataBase)
-
-    def switch_to_json(self):
-
-        # JSON-kompatible Datenstruktur vorbereiten
-        modelObjects = []
-        for object in self.__mbsObjectList:
-            modelObject = {"type": object.getType(),
-                           "subtype": object.getSubType(),
-                           "parameter": object.parameter}
-            modelObjects.append(modelObject)
-        
-        jDataBase = json.dumps({"modelObjects": modelObjects})
-        
-
-        # Daten als Python-Dictionary zurückgeben
-        return jDataBase
-
-
-        
+  
     def showModel(self, renderer):
         for object in self.__mbsObjectList:
             object.show(renderer)
@@ -131,7 +113,7 @@ class mbsModel:
         
         # Filterung der Parameter je nach Typ
         if obj_type == "Body":
-            # Beispiel für spezielle Parameter für Body-Objekte
+        # spezielle Parameter für Body-Objekte
             return {key: value["value"] for key, value in parameters.items() if key in ["mass", "COG", "position", "x_axis", "y_axis", "z_axis"]}
         elif obj_type == "Constraint":
             return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "position", "dx", "dy", "dz","ax", "ay", "az"]}
@@ -140,7 +122,7 @@ class mbsModel:
         elif obj_type == "Measure":
             return {key: value["value"] for key, value in parameters.items() if key in ["body1", "body2", "type","component","location_body1","location_body2", "type","use_initial_value"]}
         
-        # Fallback: Gebe alle Parameter zurück, wenn kein spezifischer Typ gefunden wurde
+        #Gibt alle Parameter zurück, wenn kein spezifischer Typ gefunden wurde
         return {key: value["value"] for key, value in parameters.items()}
     
     

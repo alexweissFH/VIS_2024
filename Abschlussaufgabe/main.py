@@ -26,5 +26,8 @@ window.show()
 # Start des Qt-Event-Loops
 sys.exit(app.exec())
 
+
+
+#launch.jason:
 #C:\Users\alexa/AppData/Local/Programs/Python/Python313/python.exe "QT_Tutorial/main.py" -f "QT_Tutorial/all_day.csv" unten im powershell eingeben
 #C:\Users\alexa/AppData/Local/Programs/Python/Python312/python.exe -m pip install pandas

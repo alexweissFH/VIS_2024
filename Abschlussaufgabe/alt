@@ -1,0 +1,54 @@
+def on_tree_data_changed(self, top_left, bottom_right):
+        """Verarbeitet Änderungen in den Baumparametern und aktualisiert das Modell."""
+        if top_left.row() == bottom_right.row() and top_left.column() == bottom_right.column():
+            # Hole den geänderten Parameter
+            item = self.tree_model.itemFromIndex(top_left)
+            new_value = item.text()  # Der neue Wert des geänderten Parameters
+
+            # Hole den Parameter-Namen (dies könnte der Name der Zeile im Baum sein)
+            row_item = item.parent()
+            param_name = row_item.text()  # Der Name des Parameters (z.B. "position", "mass", etc.)
+
+            # Hole den Namen des Objekts, dessen Parameter geändert werden (dies könnte die oberste Zeile im Baum sein)
+            object_name = row_item.parent().text()  # Der Name des Objekts
+
+            print(f"Änderung erkannt: Objekt = {object_name}, Parameter = {param_name}, Neuer Wert = {new_value}")
+
+            # Finde das entsprechende Objekt im Modell
+            object_found = False
+            for obj in self.model.get_mbsObjectList():
+                obj_type, sub_type = self.model.get_object_type_and_name(obj)
+
+                # Wenn der Name des Objekts übereinstimmt, aktualisiere den Parameter
+                if obj.parameter.get("name", {}).get("value", "") == object_name:
+                    print(f"Objekt {object_name} gefunden. Aktualisiere Parameter {param_name}...")
+                    # Setze den geänderten Parameter mit dem neuen Wert
+                    self.model.set_object_parameters(obj, obj_type, {param_name: new_value})
+
+                    # Sicherstellen, dass der Wert tatsächlich gesetzt wird
+                    print(f"Setze {param_name} für {object_name} auf {new_value}")
+                    object_found = True
+                    break
+
+            if not object_found:
+                print(f"Fehler: Objekt {object_name} nicht gefunden!")
+
+
+
+
+
+                #def switch_to_json(self):
+
+        # JSON-kompatible Datenstruktur vorbereiten
+        #modelObjects = []
+        #for object in self.__mbsObjectList:
+            #modelObject = {"type": object.getType(),
+                           #"subtype": object.getSubType(),
+                           #"parameter": object.parameter}
+            #modelObjects.append(modelObject)
+        
+        #jDataBase = json.dumps({"modelObjects": modelObjects})
+        
+
+        # Daten als Python-Dictionary zurückgeben
+       # return jDataBase

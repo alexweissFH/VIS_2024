@@ -43,6 +43,7 @@ class Widget(QWidget):
         except Exception as e:
             print(f"Fehler beim Aktualisieren des Renderers: {str(e)}")
 
+    #Funktioniert nicht richtig. Wird eigentlich über das "mbsModel" richtig gemacht
     def clear_renderer(self):
         """Versteckt alle dargestellten Objekte im Renderer."""
         try:

@@ -125,9 +125,12 @@ class MainWindow(QMainWindow):
 
         custom_toolbar.addWidget(bg_color_button) #Auswahlmöglichkeit wird der benutzerdefinierbaren Toolbar hinzugefügt
         
+    #Auswahl eines Pfades bzw. Json-Datei
     def select_and_load_database(self):
         """Lädt eine JSON-Datenbankdatei."""
-        json_path, _ = QFileDialog.getOpenFileName(self, "Load Database", "", "JSON Files (*.json);;All Files (*)")
+        json_path, _ = QFileDialog.getOpenFileName(self, "Load Database", "", "JSON Files (*.json);;All Files (*)") #Auswahl der Json Datei
+        
+        #Überprüfen das Laden einer Json-Datei erfolgreich war
         if json_path:
             try:
                 # Json-File (Datenbank) ins Modell laden
@@ -140,11 +143,16 @@ class MainWindow(QMainWindow):
                 # Erfolgsmeldung
                 QMessageBox.information(self, "Success", f"Database loaded successfully: {json_path}")
             except Exception as e:
+                
+                # Zeigt eine Fehlermeldung an, wenn ein Fehler auftritt
                 QMessageBox.critical(self, "Error", f"Error loading database:\n{str(e)}")
 
+    #Auswahl eines Pfades bzw. Fdd-Datei
     def select_and_import_fdd(self):
         """Importiert eine FDD-Datei und konvertiert sie in JSON."""
         fdd_path, _ = QFileDialog.getOpenFileName(self, "Import Fdd File", "", "Fdd Files (*.fdd);;All Files (*)")
+        
+        #Überprüfen das Laden einer Fdd-Datei erfolgreich war
         if fdd_path:
             try:
                 # Laden einer FDD-Datei. Das Funktioniert über den Inputfilereader
@@ -157,7 +165,7 @@ class MainWindow(QMainWindow):
                 # Erfolgsmeldung
                 QMessageBox.information(self, "Success", f"Fdd file imported successfully: {fdd_path}")
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Error importing Fdd file:\n{str(e)}")
+                QMessageBox.critical(self, "Error", f"Error importing Fdd file:\n{str(e)}") #Fehlermeldung
 
     #File wird als Json-Datein abgespeichert. 
     def save_to_file(self):
@@ -186,11 +194,14 @@ class MainWindow(QMainWindow):
         """Erstellt das Dock-Widget für den Strukturbaum."""
         #Qdock widget wird definiert als ein verschiebbares Fenster, welches in gewissen bereichen "gefangen" wird
         Qdock_widget = QDockWidget("Strukturbaum", self)
+        
+        # DockingWidgetMovable = Erlaubt das Verschieben des Dock-Widgets
+        # DockingWidgetFloatable =  # Erlaubt das Lösen des Dock-Widgets vom Hauptfenster
         Qdock_widget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
 
         # Erstelle ein Widget für den Strukturbaum
         tree_widget = QWidget()
-        layout = QVBoxLayout(tree_widget)
+        layout = QVBoxLayout(tree_widget)  #Vertikale Anordnung der Elemente
 
         #Baum-Sturktur
         self.tree_view = QTreeView(self)
@@ -232,21 +243,25 @@ class MainWindow(QMainWindow):
         for obj in self.model.get_mbsObjectList():
             obj_type, sub_type = self.model.get_object_type_and_name(obj)
 
+            #item name ist z.B. new_body_0
             item_name = obj.parameter.get("name", {}).get("value", "Unbekannter Name")
             item_type = obj_type
 
+            #Falls das Objekt (item) nicht als string erkannt wird, wird es umgewandelt
             if isinstance(obj, object):
                 item_name = str(item_name)
 
+            #Neues Baum-Element für die Namen der Objekte (Körper, Constraints,...) erstellen
             item = QStandardItem(f"{item_name}")
-            item.setEditable(True)
+            item.setEditable(True) #kann umgeschrieben Werden
 
             # Holen der Parameter bzw. zuweisen in die rechte Spalte neben der Bezeichnung 
             parameters = self.model.get_object_parameters(obj, obj_type)
 
             if not parameters:
-                parameters = {"Standard-Parameter": "Kein Wert"}
+                parameters = {"Standard-Parameter": "Kein Wert"} #Wenn keine Parameter eingetragen sind sind, "keinen Wert" setzen
 
+            # Parameter in die Baumansicht hinzufügen
             for param_name, param_value in parameters.items():
                 param_name_item = QStandardItem(param_name)
                 param_name_item.setEditable(False)
@@ -254,9 +269,9 @@ class MainWindow(QMainWindow):
                 param_value_item = QStandardItem(str(param_value))
                 param_value_item.setEditable(True)
 
-                item.appendRow([param_name_item, param_value_item])
+                item.appendRow([param_name_item, param_value_item]) #linke Spalte den Namen, rechte den Wert
 
-            # Objekte nach Typ sortieren
+            # Objekte werden nach Typ sortiert bzw. in die richitge Kategorie sortiert
             if obj_type == "Body":
                 menu_rigid_bodies.appendRow(item)
             elif obj_type == "Constraint":
@@ -271,24 +286,28 @@ class MainWindow(QMainWindow):
         menu_category.appendRow(menu_forces)
         menu_category.appendRow(menu_measures)
 
-        # Baum erweitern
+        # Baum erweitern, ale Elemente anzeigen
         self.tree_view.expandAll()
 
-
+    #Funktion die benötigt wird, um zum einen die Datei über den Baum umzuschreiben bzw. um Darstellungen im VTK Fenster zu ändern
+    #diese Funktion erkännt, ob und welche Parameter im Baum geändert wurden. 
     def on_tree_data_changed(self, top_left, bottom_right):
         """Verarbeitet Änderungen in den Baumparametern und aktualisiert das Modell."""
-        if top_left.row() == bottom_right.row() and top_left.column() == bottom_right.column():
-            try:
+        
+        # Überprüfen, ob ein Feld geändert wurde
+        if top_left.row() == bottom_right.row() and top_left.column() == bottom_right.column():    #top_left und bottom_right: Diese beiden Indizes geben den Bereich an, der sich im Baummodell geändert hat.
+            try:                                                                                   #row() und column(): rufen die Zeilen- und Spaltennummern der jeweiligen Indizes ab.
                 # Geänderten Wert abrufen
                 item = self.tree_model.itemFromIndex(top_left)
                 new_value = item.text()
                 print(f"Geändertes Feld: Zeile={top_left.row()}, Spalte={top_left.column()}, Neuer Wert={new_value}")
 
-                # Objektname (z. B. new_body_0 oder new_constraint_0) finden
+                # Objektname suchen (z. B. new_body_0 oder new_constraint_0) finden
                 object_item = item
                 while object_item.parent() and object_item.parent().text().strip().lower() not in ["rigid bodies", "constraints"]:
                     object_item = object_item.parent()
 
+                # Wenn das Objekt nicht zu einem der Objekte gehört, dann abbrechen
                 if not object_item.parent() or object_item.parent().text().strip().lower() not in ["rigid bodies", "constraints"]:
                     print("Fehler: Das Objekt gehört weder zu 'Rigid Bodies' noch zu 'Constraints'.")
                     return
@@ -297,6 +316,8 @@ class MainWindow(QMainWindow):
                 print(f"Erkanntes Objekt: {object_name}")
 
                 # Zeilen (Parameter) basierend auf der Reihenfolge zuordnen
+                #das ist noch nicht fertig! ist ein Zufalls das Position bei Body und Constraint in der gleichen Zeile sind. Das müsste im Weiteren aufgesplittet werden. 
+                #Fängt bei 0 zum zählen an?
                 row_to_param = {
                     2: "position",  # Zeile 2 für Position
                     3: "x_axis",    # Zeile 3 für X-Achse
@@ -318,7 +339,7 @@ class MainWindow(QMainWindow):
                     # Wenn das Objekt zu den "Rigid Bodies" gehört
                     for obj in self.model.get_mbsObjectList():
                         model_object_name = obj.parameter.get("name", {}).get("value", "").strip()
-                        #print(f"Vergleiche Baum-Objekt '{object_name}' mit Modell-Objekt '{model_object_name}'")
+                        #print(f"Vergleiche Baum-Objekt '{object_name}' mit Modell-Objekt '{model_object_name}'")  #alte debuging hilfe
 
                         if model_object_name.lower() == object_name.lower():
                             #print(f"Objekt {object_name} im Modell gefunden. Aktualisiere Parameter {param_name}...")
@@ -328,17 +349,18 @@ class MainWindow(QMainWindow):
                                 if param_name == "position":
                                     # Für 'position' wird der Wert als Liste gespeichert
                                     vectorText = new_value.strip("[]")  # Entfernt die eckigen Klammern
-                                    obj.parameter[param_name]["value"] = list(map(float, vectorText.split(',')))  # Wandelt den String in eine Liste von Fließkommazahlen um
+                                    obj.parameter[param_name]["value"] = list(map(float, vectorText.split(',')))  # Wandelt den String in einen Vektor mit Float einträgen um
                                 else:
                                     # Für andere Parameter wird der Wert als float gesetzt
                                     obj.parameter[param_name]["value"] = float(new_value)
 
-                                #print(f"Parameter {param_name} erfolgreich auf {new_value} gesetzt.")
+                                #print(f"Parameter {param_name} erfolgreich auf {new_value} gesetzt.")  #alte debuging Hilfe
                             except Exception as e:
                                 print(f"Fehler beim Setzen von {param_name}: {str(e)}")
                             object_found = True
                             break
 
+                #das Ganze auch noch für Constraintss
                 elif object_item.parent().text().strip().lower() == "constraints":
                     # Wenn das Objekt zu den "Constraints" gehört
                     for constraint in self.model.get_mbsObjectList():
@@ -347,7 +369,7 @@ class MainWindow(QMainWindow):
                             print(f"Vergleiche Baum-Objekt '{object_name}' mit Modell-Objekt '{model_object_name}'")
 
                             if model_object_name.lower() == object_name.lower():
-                                print(f"Objekt {object_name} im Modell gefunden. Aktualisiere Parameter {param_name}...")
+                                #print(f"Objekt {object_name} im Modell gefunden. Aktualisiere Parameter {param_name}...")
 
 
                                 # Aktualisiere den Parameter
@@ -360,7 +382,7 @@ class MainWindow(QMainWindow):
                                         # Für andere Parameter wird der Wert als float gesetzt
                                         obj.parameter[param_name]["value"] = float(new_value)
 
-                                    print(f"Parameter {param_name} erfolgreich auf {new_value} gesetzt.")
+                                    #print(f"Parameter {param_name} erfolgreich auf {new_value} gesetzt.")
                                 except Exception as e:
                                     print(f"Fehler beim Setzen von {param_name}: {str(e)}")
                                 object_found = True
@@ -372,40 +394,38 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print(f"Fehler beim Verarbeiten der Änderung: {str(e)}")
 
-
+    #Regenerieren = Parameter übernehmen und neu rendern
     def regenerate_model(self):
         """Regeneriert das Modell, indem die Datenbank vorübergehend gespeichert und neu geladen wird."""
         try:
-            self.centralWidget().clear_renderer()  # Vorher das Modell verstecken
+            self.centralWidget().clear_renderer()  # Vorher das Modell aus dem Fenster leeren   #funktioniert noch nicht peerfekt
             print("Renderer erfolgreich geleert.")
             
             print("Start der Regenerierung des Modells...")
 
             # Temporären Speicherpfad erstellen
+            # Idee ist, ein Json lokal auszugeben, dieses wieder als model einzulesen und das lokale Json-File wieder zu löschen
             with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_file:
                 temp_path = temp_file.name
 
-            print(f"Temporärer Speicherpfad: {temp_path}")
+            #print(f"Temporärer Speicherpfad: {temp_path}")  #debuging Hilfe. Dort das Json hingespeichert
 
             # Modell speichern
-            self.model.saveDatabase(temp_path)
-            print("Modell erfolgreich gespeichert.")
-
-            # Renderer leeren
-            #self.clear_renderer()
+            self.model.saveDatabase(temp_path)  #Speichervorgung mit Funktion welche eigentlich zum Modell abspeichern verwendet wird. 
+            #print("Modell erfolgreich gespeichert.") #debuging Hilfe
 
             # Modell neu laden
-            self.model.clear()
+            self.model.clear()   #clear ist in mbsModel als Funktion definiert. Wenn man das nicht macht wird mit show auch das alte Modell wieder mit angezeigt. 
             self.centralWidget().clear_renderer()
-            self.model = mbsModel.mbsModel()
-            self.model.loadDatabase(temp_path)
-            print("Modell erfolgreich neu geladen.")
+            self.model = mbsModel.mbsModel()   #Neues Modell initialisieren
+            self.model.loadDatabase(temp_path) #mithilfe des Json-Files die neuen Modelldaten holen
+            #print("Modell erfolgreich neu geladen.") #Debuging
 
             # Temporäre Datei löschen
             os.remove(temp_path)
-            print("Temporäre Datei gelöscht.")
+            #print("Temporäre Datei gelöscht.")  #Debuging
 
-            # Neu rendern
+            #das VTK Fenster neu rendern
             widget = self.centralWidget()
             if widget is not None:
                 widget.update_renderer(self.model)
