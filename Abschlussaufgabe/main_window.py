@@ -399,9 +399,9 @@ class MainWindow(QMainWindow):
         """Regeneriert das Modell, indem die Datenbank vorübergehend gespeichert und neu geladen wird."""
         try:
             self.centralWidget().clear_renderer()  # Vorher das Modell aus dem Fenster leeren   #funktioniert noch nicht peerfekt
-            print("Renderer erfolgreich geleert.")
+            #print("Renderer erfolgreich geleert.")
             
-            print("Start der Regenerierung des Modells...")
+            #print("Start der Regenerierung des Modells...")
 
             # Temporären Speicherpfad erstellen
             # Idee ist, ein Json lokal auszugeben, dieses wieder als model einzulesen und das lokale Json-File wieder zu löschen
@@ -429,11 +429,11 @@ class MainWindow(QMainWindow):
             widget = self.centralWidget()
             if widget is not None:
                 widget.update_renderer(self.model)
-                print("Renderer erfolgreich aktualisiert.")
+                #print("Renderer erfolgreich aktualisiert.")
             else:
                 print("Fehler: Kein zentrales Widget gefunden!")
 
-            print("Modell erfolgreich regeneriert!")
+            #print("Modell erfolgreich regeneriert!")
 
         except Exception as e:
             print(f"Fehler beim Regenerieren des Modells: {str(e)}")

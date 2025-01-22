@@ -55,17 +55,17 @@ class Widget(QWidget):
             while renderer.GetActors().GetNumberOfItems() > 0:
                 actor = renderer.GetActors().GetItemAsObject(0)
                 renderer.RemoveActor(actor)  # Entferne den Actor
-                print(f"Actor {actor} entfernt.")
+                #print(f"Actor {actor} entfernt.")
 
             # Falls noch andere ViewProps existieren, könnten wir auch diese entfernen:
             # Clear all other props
             renderer.RemoveAllViewProps()
-            print("Alle ViewProps entfernt.")
+            #print("Alle ViewProps entfernt.")
 
             # Renderer zurücksetzen und leeren
             renderer.ResetCamera()
             render_window.Render()
-            print("Renderer erfolgreich geleert.")
+            #print("Renderer erfolgreich geleert.")
 
         except Exception as e:
             print(f"Fehler beim Leeren des Renderers: {str(e)}")

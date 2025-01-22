@@ -85,13 +85,13 @@ class mbsModel:
     def clear(self):
         """Löscht alle Daten im Modell und setzt es auf den ursprünglichen Zustand zurück."""
         self.__mbsObjectList.clear()  # Lösche die Modellobjekte
-        print("Modellobjekte gelöscht.")
+        #print("Modellobjekte gelöscht.")
 
         # Weitere Aufräumarbeiten oder Initialisierungen, die für dein Modell notwendig sind
         # Zum Beispiel: Alle Renderer zurücksetzen oder Status-Variablen zurücksetzen
         # Hier könnte auch der Renderer gelöscht oder zurückgesetzt werden, falls notwendig
         self.__mbsObjectList = []  # Zurücksetzen der Liste der Modellobjekte
-        print("Modell zurückgesetzt.")
+        #print("Modell zurückgesetzt.")
 
     def get_object_type_and_name(self, obj):
         """Gibt den Typ und den Namen des Objekts zurück."""
